@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Student Activity{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'project_app/css/styles.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">
+      <img src="{% static 'project_app/images/logo.png' %}" alt="Logo">
+      <span>Student Activity</span>
+    </div>
+    <div class="nav-links">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'about' %}">About</a>
+      <a href="{% url 'prediction' %}">Prediction</a>
+      <a href="{% url 'admin:index' %}" class="admin-btn">Admin</a>
+    </div>
+  </nav>
+
+  <!-- Content Block -->
+  <div id="content">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Student Activity. All rights reserved.</p>
+  </footer>
+</body>
+</html>

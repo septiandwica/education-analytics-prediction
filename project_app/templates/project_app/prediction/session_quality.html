@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Quality Prediction Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .prediction-form {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .result-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .result-good {
+            border-left: 5px solid var(--success-color);
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        }
+
+        .result-poor {
+            border-left: 5px solid var(--danger-color);
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+
+        .confidence-bar {
+            height: 10px;
+            border-radius: 5px;
+            background: #e2e8f0;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .badge-prediction {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-good {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-poor {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .model-info {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Floating Navigation Button */
+.floating-nav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.nav-toggle {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 4px 20px rgba(2, 48, 29, 0.4);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(0, 169, 99, 0.6);
+}
+
+.nav-toggle.active {
+    transform: rotate(45deg);
+}
+
+.nav-menu {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    min-width: 250px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: scale(0);
+    transform-origin: bottom right;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.nav-menu.active {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    margin: 5px 0;
+    border: 2px solid transparent;
+}
+
+.nav-item:hover {
+    background: rgba(0, 184, 107, 0.1);
+    color: #00b86b;
+    text-decoration: none;
+    border-color: rgba(0, 184, 107, 0.2);
+    transform: translateX(-5px);
+}
+
+.nav-item i {
+    width: 20px;
+    margin-right: 12px;
+}
+
+.nav-item-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.nav-item-desc {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+}
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .stat-card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                <div class="main-container">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold text-primary mb-3">
+                            <i class="fas fa-brain me-3"></i>
+                            Session Quality Prediction
+                        </h1>
+                        <p class="lead text-muted">
+                            Analysis and prediction of session quality based on duration and attendance rate
+                        </p>
+                    </div>
+
+                    <!-- Model Info -->
+                    {% if model_info %}
+                    <div class="model-info animate__animated animate__fadeInUp">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-2">
+                                    <i class="fas fa-cog me-2"></i>
+                                    {{ model_info.name }}
+                                </h5>
+                                <p class="mb-1">
+                                    <strong>Accuracy:</strong> {{ model_info.accuracy }}%
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Trained on:</strong> {{ model_info.training_date|date:"d M Y H:i" }}
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="h3 mb-0">{{ model_info.accuracy }}%</div>
+                                <small>Model Accuracy</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card animate__animated animate__fadeInUp animate__delay-1s">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                <h3 class="fw-bold">{{ total_sessions }}</h3>
+                                <p class="mb-0">Total Sessions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card animate__animated animate__fadeInUp animate__delay-2s">
+                                <i class="fas fa-clock"></i>
+                                <h3 class="fw-bold">{{ avg_duration }} min</h3>
+                                <p class="mb-0">Average Duration</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card animate__animated animate__fadeInUp animate__delay-3s">
+                                <i class="fas fa-chart-line"></i>
+                                <h3 class="fw-bold">GradientBoostingClassifier</h3>
+                                <p class="mb-0">Prediction Available</p>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Prediction Form -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="prediction-form animate__animated animate__fadeInLeft">
+                                <h4 class="mb-4">
+                                    <i class="fas fa-magic me-2 text-primary"></i>
+                                    Predict Session Quality
+                                </h4>
+                                
+                                <form id="predictionForm">
+                                    <div class="mb-4">
+                                        <label for="duration" class="form-label fw-semibold">
+                                            <i class="fas fa-clock me-2"></i>
+                                            Session Duration (minutes)
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="duration" 
+                                               name="duration_minutes"
+                                               placeholder="Example: 90"
+                                               min="1" 
+                                               max="300"
+                                               required>
+                                        <div class="form-text">Enter session duration in minutes (1-300)</div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="attendance" class="form-label fw-semibold">
+                                            <i class="fas fa-users me-2"></i>
+                                            Attendance Rate (%)
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="attendance" 
+                                               name="attendance_ratio"
+                                               placeholder="Example: 85"
+                                               min="0" 
+                                               max="100"
+                                               required>
+                                        <div class="form-text">Enter attendance percentage (0-100%)</div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-predict w-100">
+                                        <i class="fas fa-magic me-2"></i>
+                                        Predict Session Quality
+                                    </button>
+                                </form>
+                                
+
+                                <div class="loading-spinner" id="loadingSpinner">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Making prediction...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div id="predictionResult" class="d-none animate__animated animate__fadeInRight">
+                                <div class="result-card card h-100">
+                                    <div class="card-body">
+                                        <h4 class="card-title mb-4">
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            Prediction Result
+                                        </h4>
+                                        
+                                        <div id="resultContent">
+                                            <!-- Prediction result will be displayed here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="floating-nav">
+                    <div class="nav-menu" id="navMenu">
+                        <a href="{% url 'prediction' %}" class="nav-item">
+                            <i class="fas fa-home"></i>
+                            <div>
+                                <div class="nav-item-title">Dashboard</div>
+                                <div class="nav-item-desc">Return to Overview</div>
+                            </div>
+                        </a>
+                        <a href="#" class="nav-item" onclick="showHelp()">
+                            <i class="fas fa-question-circle"></i>
+                            <div>
+                                <div class="nav-item-title">Help</div>
+                                <div class="nav-item-desc">Help and support</div>
+                            </div>
+                        </a>
+                        <a href="#" class="nav-item" onclick="clearForm()">
+                            <i class="fas fa-refresh"></i>
+                            <div>
+                                <div class="nav-item-title">Clear Form</div>
+                                <div class="nav-item-desc">Reset all inputs</div>
+                            </div>
+                        </a>
+                    </div>
+                    <button class="nav-toggle" id="navToggle">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Prediction Form Handler
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const duration = parseFloat(document.getElementById('duration').value);
+            const attendance = parseFloat(document.getElementById('attendance').value) / 100; // Convert to ratio
+            
+            // Show loading
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('predictionResult').classList.add('d-none');
+            
+            try {
+                const response = await fetch('/prediction/session-quality/api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        duration_minutes: duration,
+                        attendance_ratio: attendance
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                if (data.success) {
+                    displayPredictionResult(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                alert('An error occurred: ' + error.message);
+            }
+        });
+
+        function displayPredictionResult(data) {
+            const resultCard = document.getElementById('predictionResult');
+            const resultContent = document.getElementById('resultContent');
+            
+            const isGood = data.prediction.quality === 'Good';
+            resultCard.className = `result-card card h-100 ${isGood ? 'result-good' : 'result-poor'}`;
+            
+            let recommendationsHtml = '';
+            if (data.analysis.recommendations && data.analysis.recommendations.length > 0) {
+                recommendationsHtml = `
+
+                    <div class="mt-3">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Recommendations:</h6>
+                        <ul class="list-unstyled">
+                            ${data.analysis.recommendations.map(rec => `<li class="mb-1"><i class="fas fa-check-circle me-2 text-success"></i>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            resultContent.innerHTML = `
+                <div class="text-center mb-4">
+                    <div class="display-6 mb-2">
+                        <i class="fas fa-${isGood ? 'thumbs-up text-success' : 'thumbs-down text-danger'}"></i>
+                    </div>
+                    <h3 class="fw-bold ${isGood ? 'text-success' : 'text-danger'}">
+                        ${data.prediction.quality}
+                    </h3>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill ${isGood ? 'bg-success' : 'bg-danger'}" 
+                             style="width: ${data.prediction.confidence}%"></div>
+                    </div>
+                    <small class="text-muted">Confidence: ${data.prediction.confidence}%</small>
+                </div>
+                
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <div class="h5 text-success mb-1">${data.prediction.probability_good}%</div>
+                            <small class="text-muted">Probability Good</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 text-danger mb-1">${data.prediction.probability_poor}%</div>
+                        <small class="text-muted">Probability Poor</small>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2">
+                                    <i class="fas fa-clock me-2"></i>Duration Analysis
+                                </h6>
+                                <p class="card-text small mb-0">${data.analysis.duration_analysis}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2">
+                                    <i class="fas fa-users me-2"></i>Attendance Analysis
+                                </h6>
+                                <p class="card-text small mb-0">${data.analysis.attendance_analysis}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${recommendationsHtml}
+                
+                <div class="mt-3 p-3 bg-light rounded">
+                    <h6 class="mb-2">Input Data:</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <small><strong>Duration:</strong> ${data.input.duration_minutes} minutes</small>
+                        </div>
+                        <div class="col-6">
+                            <small><strong>Attendance:</strong> ${data.input.attendance_ratio}%</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultCard.classList.remove('d-none');
+        }
+        // Initialize floating navigation
+function initFloatingNav() {
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    navToggle.addEventListener('click', function() {
+        navToggle.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.floating-nav')) {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+        }
+    });
+}
+
+// Initialize floating navigation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initFloatingNav();
+});
+
+function showHelp() {
+    alert(`
+💡 **Input Guidelines:**
+
+1. **Session Duration (minutes)**:
+   - Enter the total session duration in minutes (e.g., 90 minutes).
+   - Valid range: 1 to 300 minutes.
+
+2. **Attendance Rate (%)**:
+   - Enter the percentage of attendance for the session (e.g., 85%).
+   - Valid range: 0 to 100%.
+
+3. **Additional Fields** (if applicable):
+   - **Member Count**: Enter the number of group members.
+   - **Feedback Count**: Enter the number of feedbacks received.
+   - **Other fields**: Follow the instructions provided within the form to complete the input.
+
+Click **"Predict Session Quality"** to get the result based on the input data.
+    `);
+}
+
+// Function to clear the form
+function clearForm() {
+    document.getElementById('predictionForm').reset(); // Reset all form inputs
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('defaultMessage').style.display = 'block';
+    
+    // Close the nav menu
+    document.getElementById('navToggle').classList.remove('active');
+    document.getElementById('navMenu').classList.remove('active');
+}
+
+    </script>
+</body>
+</html>

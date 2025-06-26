@@ -1,0 +1,1184 @@
+<!-- dashboard_syahira.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"Student Engagement Level Prediction Dashboard" }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        .chart-container {
+                background: white;
+                border-radius: 15px;
+                padding: 25px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                margin-bottom: 20px;
+                height: auto; /* Ubah dari 400px ke auto */
+                min-height: 450px; /* Tambahkan min-height */
+                position: relative;
+            }
+
+            /* Tambahkan styling khusus untuk canvas */
+            .chart-container canvas {
+                max-height: 350px !important;
+                width: 100% !important;
+            }
+
+            /* Media query untuk mobile tetap menggunakan height fixed yang lebih kecil */
+            @media (max-width: 768px) {
+                .chart-container {
+                    height: auto;
+                    min-height: 350px;
+                    padding: 15px;
+                }
+                
+                .chart-container canvas {
+                    max-height: 250px !important;
+                }
+            }
+            
+        :root {
+            --primary-color: #10b981;
+            --secondary-color: #059669;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --dark-color: #1f2937;
+            --light-color: #f0f9ff;
+            --gradient-start: #10b981;
+            --gradient-end: #059669;
+        }
+
+        body {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 30px;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stats-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .stats-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .prediction-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            padding: 12px 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+
+        .prediction-result {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid var(--success-color);
+        }
+
+        .prediction-result.low-engagement {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-left-color: var(--danger-color);
+        }
+
+        .engagement-high {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .engagement-low {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            height: 400px;
+        }
+
+        .model-info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .feature-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+
+        .section-title {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .range-info {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .engagement-criteria {
+            background: #f0fdf4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .accuracy-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+                <!-- Back Button -->
+        <div style="margin-bottom: 20px;">
+            <a href="{% url 'prediction' %}" style="display: inline-flex; align-items: center; padding: 10px 20px; background: #0d663c; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 0.95rem; transition: all 0.3s ease;">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>Back to Dashboard
+            </a>
+        </div>
+        <div class="dashboard-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <h1 class="mb-3 animate__animated animate__fadeInDown">
+                    <i class="fas fa-chart-line me-3"></i>
+                    Student Engagement Level Prediction Dashboard
+                </h1>
+                <p class="mb-0 opacity-90">Advanced ML-powered system for predicting student engagement levels</p>
+            </div>
+
+            <!-- Model Accuracy Section -->
+            {% if model_info %}
+            <div class="model-info-section animate__animated animate__fadeInUp">
+                <h3 class="section-title">
+                    <i class="fas fa-robot me-2"></i>Model Performance
+                </h3>
+                <div class="text-center">
+                    <div class="accuracy-badge">
+                        <i class="fas fa-bullseye me-2"></i>Accuracy: 90%
+                    </div>
+                    <div class="accuracy-badge">
+                        <i class="fas fa-chart-bar me-2"></i>F1-Score: 80%
+                    </div>
+                    <div class="accuracy-badge">
+                        <i class="fas fa-balance-scale me-2"></i>Precision: 88%
+                    </div>
+                    <div class="accuracy-badge">
+                        <i class="fas fa-search me-2"></i>Recall: 69%
+                    </div>
+                </div>
+                <p class="text-center mt-3 text-muted">{{ model_info.model_summary }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Dataset Statistics -->
+            {% if dataset_stats %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3 class="section-title animate__animated animate__fadeInUp">
+                        <i class="fas fa-database me-2"></i>Dataset Overview
+                    </h3>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stats-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                        <div class="text-center">
+                            <i class="fas fa-users stats-icon"></i>
+                            <div class="stats-number">{{ dataset_stats.total_students }}</div>
+                            <div class="stats-label">Total Students</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stats-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                        <div class="text-center">
+                            <i class="fas fa-fire stats-icon text-success"></i>
+                            <div class="stats-number text-success">{{ dataset_stats.high_engagement }}</div>
+                            <div class="stats-label">High Engagement ({{ dataset_stats.high_engagement_percentage }}%)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stats-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                        <div class="text-center">
+                            <i class="fas fa-battery-quarter stats-icon text-danger"></i>
+                            <div class="stats-number text-danger">{{ dataset_stats.low_engagement }}</div>
+                            <div class="stats-label">Low Engagement ({{ dataset_stats.low_engagement_percentage }}%)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stats-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                        <div class="text-center">
+                            <i class="fas fa-graduation-cap stats-icon"></i>
+                            <div class="stats-number">{{ dataset_stats.avg_grade }}</div>
+                            <div class="stats-label">Average Grade</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Manual Prediction Section -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="prediction-section animate__animated animate__fadeInUp">
+                        <h3 class="section-title">
+                            <i class="fas fa-keyboard me-2"></i>Manual Input Prediction
+                        </h3>
+                        <form id="manualPredictionForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="studentName" class="form-label">Student Name</label>
+                                    <input type="text" class="form-control" id="studentName" placeholder="Enter student name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="age" min="15" max="30" placeholder="Enter age" required>
+                                    <div class="range-info">Range: 15-30 years</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="gender" class="form-label">Gender</label>
+                                    <select class="form-select" id="gender" required>
+                                        <option value="">Select gender</option>
+                                        <option value="0">Male</option>
+                                        <option value="1">Female</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="avgGrade" class="form-label">Average Grade</label>
+                                    <input type="number" class="form-control" id="avgGrade" min="0" max="100" step="0.1" placeholder="Enter average grade" required>
+                                    <div class="range-info">Range: 0-100 (Higher is better)</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="sessionCount" class="form-label">Session Count</label>
+                                    <input type="number" class="form-control" id="sessionCount" min="0" max="50" placeholder="Enter session count" required>
+                                    <div class="range-info">Range: 0-50 sessions</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="totalDuration" class="form-label">Total Duration (minutes)</label>
+                                    <input type="number" class="form-control" id="totalDuration" min="0" max="3000" step="0.1" placeholder="Enter total duration" required>
+                                    <div class="range-info">Range: 0-3000 minutes</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="groupCount" class="form-label">Group Count</label>
+                                <input type="number" class="form-control" id="groupCount" min="0" max="20" placeholder="Enter group count" required>
+                                <div class="range-info">Range: 0-20 groups</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-magic me-2"></i>Predict Result
+                                <div class="loading-spinner spinner-border spinner-border-sm ms-2" role="status"></div>
+                            </button>
+                        </form>
+
+                        <!-- Engagement Criteria Explanation -->
+                        <div class="engagement-criteria">
+                            <h5 class="text-success mb-3">
+                                <i class="fas fa-info-circle me-2"></i>High Engagement Criteria
+                            </h5>
+                            <p><strong>Scoring System (Total needed: ≥50%):</strong></p>
+                            <ul class="mb-0">
+                                <li><strong>Grade Performance (40% weight):</strong> Excellent (≥75th percentile) or Good (≥80% of threshold)</li>
+                                <li><strong>Session Participation (35% weight):</strong> High participation (≥75th percentile) or Regular (≥70% of threshold)</li>
+                                <li><strong>Time Investment (25% weight):</strong> Substantial time (≥75th percentile) or Adequate (≥60% of threshold)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Student Selection (Moved to top) -->
+                    <div class="prediction-section animate__animated animate__fadeInUp mb-4">
+                        <h3 class="section-title">
+                            <i class="fas fa-user-graduate me-2"></i>Or Select Existing Student
+                        </h3>
+                        <form id="studentSelectForm">
+                            <div class="mb-3">
+                                <select class="form-select" id="studentSelect">
+                                    <option value="">Choose a student...</option>
+                                    {% for student in students %}
+                                    <option value="{{ student.stu_id }}">{{ student.name }} (ID: {{ student.stu_id }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-search me-2"></i>Get Student Data & Predict
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Prediction Result (Moved below student selection) -->
+                    <div id="predictionResultSection" class="prediction-result" style="display: none;">
+                        <div class="prediction-section">
+                            <h4 class="mb-3">
+                                <i class="fas fa-chart-pie me-2"></i>Prediction Result
+                            </h4>
+                            <div class="text-center mb-4">
+                                <h2 id="engagementStatus" class="mb-2"></h2>
+                                <div class="badge bg-primary fs-6 mb-3">
+                                    Confidence: <span id="confidenceScore">0</span>%
+                                </div>
+                            </div>
+                            
+                            <div id="predictionSummary" class="mt-3">
+                                <!-- Summary will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="chart-container animate__animated animate__fadeInUp">
+                        <h4 class="section-title">
+                            <i class="fas fa-chart-pie me-2"></i>Engagement Distribution
+                        </h4>
+                        <canvas id="engagementPieChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container animate__animated animate__fadeInUp">
+                        <h4 class="section-title">
+                            <i class="fas fa-chart-bar me-2"></i>Feature Importance
+                        </h4>
+                        <canvas id="featureImportanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Management -->
+            <div class="model-info-section animate__animated animate__fadeInUp">
+                <h3 class="section-title">
+                    <i class="fas fa-cogs me-2"></i>Model Management
+                </h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-success w-100" onclick="retrainModel()">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Retrain Model
+                            <div id="retrainSpinner" class="loading-spinner spinner-border spinner-border-sm ms-2" role="status"></div>
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-outline-primary w-100" onclick="location.reload()">
+                            <i class="fas fa-refresh me-2"></i>Refresh Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let pieChart = null;
+        let barChart = null;
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        // Manual prediction form handler
+        document.getElementById('manualPredictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('studentName').value,
+                age: parseInt(document.getElementById('age').value),
+                gender: parseInt(document.getElementById('gender').value),
+                avg_grade: parseFloat(document.getElementById('avgGrade').value),
+                session_count: parseInt(document.getElementById('sessionCount').value),
+                total_duration_minutes: parseFloat(document.getElementById('totalDuration').value),
+                group_count: parseInt(document.getElementById('groupCount').value)
+            };
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const spinner = submitBtn.querySelector('.loading-spinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            try {
+                // Calculate prediction locally (simplified version)
+                const prediction = calculateEngagement(formData);
+                displayPredictionResult(prediction, formData);
+                
+            } catch (error) {
+                alert('Error making prediction: ' + error.message);
+            } finally {
+                // Hide loading state
+                submitBtn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Student selection form handler
+        document.getElementById('studentSelectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const studentId = document.getElementById('studentSelect').value;
+            if (!studentId) {
+                alert('Please select a student');
+                return;
+            }
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting Data & Predicting...';
+            
+            try {
+                // PERBAIKAN: Tambah error handling yang lebih baik
+                const response = await fetch('/prediction/engagement/api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        student_id: parseInt(studentId) // Pastikan integer
+                    })
+                });
+                
+                // PERBAIKAN: Check response status sebelum parsing JSON
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response error:', errorText);
+                    
+                    // Try to parse as JSON, fallback to text
+                    let errorMessage;
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMessage = errorData.error || 'Unknown error occurred';
+                    } catch {
+                        errorMessage = `Server error (${response.status}): ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                const data = await response.json();
+                console.log('Prediction result:', data);
+                
+                // Display result
+                displayPredictionResult(data, data.features);
+                
+                // Show success message
+                showSuccessMessage(`Prediction completed for ${data.student_name}!`);
+                
+            } catch (error) {
+                console.error('Error making prediction:', error);
+                showErrorMessage('Error making prediction: ' + error.message);
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        function showErrorMessage(message) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert-danger.temp-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Create error alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show temp-alert';
+            alertDiv.innerHTML = `
+                <strong>Error!</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert at top of main content
+            const mainContent = document.querySelector('.container-fluid');
+            mainContent.insertBefore(alertDiv, mainContent.firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function showSuccessMessage(message) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert-success.temp-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Create success alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show temp-alert';
+            alertDiv.innerHTML = `
+                <strong>Success!</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert at top of main content
+            const mainContent = document.querySelector('.container-fluid');
+            mainContent.insertBefore(alertDiv, mainContent.firstChild);
+            
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+
+        // Calculate engagement level (client-side simplified version)
+        function calculateEngagement(data) {
+            let score = 0;
+            
+            // Grade component (40% weight) - using sample thresholds
+            const gradeThreshold = 75;
+            if (data.avg_grade >= gradeThreshold) {
+                score += 0.4;
+            } else if (data.avg_grade >= gradeThreshold * 0.8) {
+                score += 0.2;
+            }
+            
+            // Session component (35% weight)
+            const sessionThreshold = 8;
+            if (data.session_count >= sessionThreshold) {
+                score += 0.35;
+            } else if (data.session_count >= sessionThreshold * 0.7) {
+                score += 0.15;
+            }
+            
+            // Duration component (25% weight)
+            const durationThreshold = 300;
+            if (data.total_duration_minutes >= durationThreshold) {
+                score += 0.25;
+            } else if (data.total_duration_minutes >= durationThreshold * 0.6) {
+                score += 0.1;
+            }
+            
+            const engagement = score >= 0.5 ? 1 : 0;
+            const confidence = Math.round(Math.max(score, 1 - score) * 100);
+            
+            return {
+                prediction: engagement,
+                engagement_label: engagement === 1 ? "High Engagement" : "Low Engagement",
+                confidence: confidence,
+                score: score,
+                student_name: data.name
+            };
+        }
+
+        // Display prediction result
+        function displayPredictionResult(prediction, features) {
+            const resultSection = document.getElementById('predictionResultSection');
+            const engagementStatus = document.getElementById('engagementStatus');
+            const confidenceScore = document.getElementById('confidenceScore');
+            const predictionSummary = document.getElementById('predictionSummary');
+            
+            // Update basic info
+            const isHighEngagement = prediction.prediction === 1;
+            engagementStatus.textContent = prediction.engagement_label;
+            engagementStatus.className = isHighEngagement ? 'engagement-high' : 'engagement-low';
+            confidenceScore.textContent = prediction.confidence;
+            
+            // Update result section styling
+            resultSection.className = `prediction-result ${isHighEngagement ? '' : 'low-engagement'}`;
+            
+            // Generate detailed summary
+            const summary = generatePredictionSummary(prediction, features);
+            predictionSummary.innerHTML = summary;
+            
+            // Show result section
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // Update charts
+            updateCharts(prediction, features);
+        }
+
+        // Generate detailed prediction summary
+        function generatePredictionSummary(prediction, features) {
+            const isHigh = prediction.prediction === 1;
+            const studentName = prediction.student_name || features.name || "Student";
+            
+            let summary = `<h5 class="${isHigh ? 'text-success' : 'text-danger'} mb-3">
+                <i class="fas fa-user me-2"></i>${studentName} - ${prediction.engagement_label}
+            </h5>`;
+            
+            if (isHigh) {
+                summary += `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-thumbs-up me-2"></i>Congratulations!</h6>
+                    <p>This student demonstrates <strong>high engagement</strong> with excellent performance across multiple areas:</p>
+                    <ul class="mb-2">
+                        <li><strong>Academic Performance:</strong> Average grade of ${features.avg_grade} shows strong understanding</li>
+                        <li><strong>Active Participation:</strong> ${features.session_count} sessions indicate consistent involvement</li>
+                        <li><strong>Time Investment:</strong> ${features.total_duration_minutes} minutes shows dedication</li>
+                        <li><strong>Collaborative Spirit:</strong> Participated in ${features.group_count} groups</li>
+                    </ul>
+                    <p class="mb-0"><strong>Recommendations:</strong> Continue current learning strategies, consider peer mentoring opportunities, and explore advanced topics.</p>
+                </div>`;
+            } else {
+                summary += `
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Needs Attention</h6>
+                    <p>This student shows <strong>low engagement</strong> and may benefit from additional support:</p>
+                    <ul class="mb-2">
+                        <li><strong>Academic Support:</strong> Grade of ${features.avg_grade} suggests need for tutoring or additional resources</li>
+                        <li><strong>Participation:</strong> Only ${features.session_count} sessions - encourage more active involvement</li>
+                        <li><strong>Time Management:</strong> ${features.total_duration_minutes} minutes may indicate scheduling or motivation challenges</li>
+                        <li><strong>Social Connection:</strong> ${features.group_count} groups - consider social learning opportunities</li>
+                    </ul>
+                    <p class="mb-0"><strong>Recommendations:</strong> Implement personalized learning plan, increase one-on-one support, gamify learning experiences, and connect with study groups.</p>
+                </div>`;
+            }
+            
+            return summary;
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Pie Chart
+            // Perbaikan untuk Pie Chart (sekitar baris 430-450 dalam kode asli)
+            const pieCtx = document.getElementById('engagementPieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Low Engagement', 'High Engagement'],
+                    datasets: [{
+                        data: [50, 50],
+                        backgroundColor: ['#ef4444', '#10b981'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true, // Ubah dari false ke true
+                    layout: {
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 20,
+                            right: 20
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15, // Tambahkan padding untuk legend
+                                usePointStyle: true
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Current Prediction',
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Perbaikan untuk Bar Chart (sekitar baris 470-500 dalam kode asli)
+            const barCtx = document.getElementById('featureImportanceChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Avg Grade', 'Sessions', 'Duration', 'Age', 'Gender', 'Groups'],
+                    datasets: [{
+                        label: 'Feature Importance',
+                        data: [0.35, 0.28, 0.15, 0.08, 0.07, 0.07],
+                        backgroundColor: '#10b981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true, // Ubah dari false ke true
+                    layout: {
+                        padding: {
+                            top: 20,
+                            bottom: 10,
+                            left: 10,
+                            right: 20
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 0.4,
+                            ticks: {
+                                padding: 10 // Tambahkan padding untuk tick labels
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                padding: 10,
+                                maxRotation: 45, // Rotasi label jika terlalu panjang
+                                minRotation: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Model Feature Importance',
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        function updateCharts(prediction, features) {
+            // Update pie chart
+            if (prediction.prediction === 1) {
+                pieChart.data.datasets[0].data = [20, 80]; // High engagement
+            } else {
+                pieChart.data.datasets[0].data = [80, 20]; // Low engagement
+            }
+            pieChart.update();
+
+            // Update feature importance based on current prediction
+            const currentFeatureValues = [
+                features.avg_grade / 100, // Normalize grade to 0-1
+                features.session_count / 50, // Normalize sessions to 0-1
+                features.total_duration_minutes / 3000, // Normalize duration to 0-1
+                features.age / 30, // Normalize age to 0-1
+                features.gender, // Already 0 or 1
+                features.group_count / 20 // Normalize groups to 0-1
+            ];
+            
+            barChart.data.datasets[0].data = currentFeatureValues;
+            barChart.update();
+        }
+
+ 
+        // Get CSRF token for Django
+        function getCSRFToken() {
+            // Method 1: From cookie
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            
+            // Method 2: From meta tag (add this to your HTML head)
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) {
+                return csrfMeta.getAttribute('content');
+            }
+            
+            // Method 3: From hidden input (if you have a form)
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrfInput) {
+                return csrfInput.value;
+            }
+            
+            console.warn('CSRF token not found!');
+            return '';
+        }
+
+        // Form validation
+        function validateForm() {
+            const requiredFields = ['studentName', 'age', 'gender', 'avgGrade', 'sessionCount', 'totalDuration', 'groupCount'];
+            let isValid = true;
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                const value = field.value.trim();
+                
+                if (!value) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                    
+                    // Additional range validation
+                    const numValue = parseFloat(value);
+                    switch(fieldId) {
+                        case 'age':
+                            if (numValue < 15 || numValue > 30) {
+                                field.classList.add('is-invalid');
+                                isValid = false;
+                            }
+                            break;
+                        case 'avgGrade':
+                            if (numValue < 0 || numValue > 100) {
+                                field.classList.add('is-invalid');
+                                isValid = false;
+                            }
+                            break;
+                        case 'sessionCount':
+                            if (numValue < 0 || numValue > 50) {
+                                field.classList.add('is-invalid');
+                                isValid = false;
+                            }
+                            break;
+                        case 'totalDuration':
+                            if (numValue < 0 || numValue > 3000) {
+                                field.classList.add('is-invalid');
+                                isValid = false;
+                            }
+                            break;
+                        case 'groupCount':
+                            if (numValue < 0 || numValue > 20) {
+                                field.classList.add('is-invalid');
+                                isValid = false;
+                            }
+                            break;
+                    }
+                }
+            });
+            
+            return isValid;
+        }
+
+        // Real-time form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid')) {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            });
+        });
+
+        // Auto-fill student data when selected
+        document.getElementById('studentSelect').addEventListener('change', function() {
+            const selectedValue = this.value;
+            if (selectedValue) {
+                // Auto-populate manual form with selected student data
+                // This would require fetching student details via AJAX
+                fetchStudentDetails(selectedValue);
+            }
+        });
+
+        // Fetch student details for auto-fill
+        async function fetchStudentDetails(studentId) {
+            try {
+                const response = await fetch(`/get-student-details/${studentId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const studentData = await response.json();
+                
+                // Auto-fill the manual form
+                document.getElementById('studentName').value = studentData.name || '';
+                document.getElementById('age').value = studentData.age || '';
+                document.getElementById('gender').value = studentData.gender || '';
+                document.getElementById('avgGrade').value = studentData.avg_grade || '';
+                document.getElementById('sessionCount').value = studentData.session_count || '';
+                document.getElementById('totalDuration').value = studentData.total_duration_minutes || '';
+                document.getElementById('groupCount').value = studentData.group_count || '';
+                
+                console.log('Student details loaded:', studentData);
+                
+            } catch (error) {
+                console.error('Error fetching student details:', error);
+                showErrorMessage('Could not load student details: ' + error.message);
+            }
+        }
+
+        // Smooth scroll to result
+        function scrollToResult() {
+            document.getElementById('predictionResultSection').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        // Enhanced prediction with detailed analysis
+        function generateDetailedAnalysis(prediction, features) {
+            const analysis = {
+                strengths: [],
+                weaknesses: [],
+                recommendations: []
+            };
+            
+            // Analyze each feature
+            if (features.avg_grade >= 75) {
+                analysis.strengths.push('Excellent academic performance');
+            } else if (features.avg_grade >= 60) {
+                analysis.strengths.push('Good academic performance');
+            } else {
+                analysis.weaknesses.push('Academic performance needs improvement');
+                analysis.recommendations.push('Consider additional tutoring or study resources');
+            }
+            
+            if (features.session_count >= 8) {
+                analysis.strengths.push('High session participation');
+            } else if (features.session_count >= 5) {
+                analysis.strengths.push('Regular session attendance');
+            } else {
+                analysis.weaknesses.push('Low session participation');
+                analysis.recommendations.push('Encourage more active class participation');
+            }
+            
+            if (features.total_duration_minutes >= 300) {
+                analysis.strengths.push('Significant time investment in learning');
+            } else if (features.total_duration_minutes >= 180) {
+                analysis.strengths.push('Adequate time spent on studies');
+            } else {
+                analysis.weaknesses.push('Limited study time');
+                analysis.recommendations.push('Develop better time management and study habits');
+            }
+            
+            if (features.group_count >= 3) {
+                analysis.strengths.push('Active in collaborative learning');
+            } else if (features.group_count >= 1) {
+                analysis.strengths.push('Some collaborative experience');
+            } else {
+                analysis.weaknesses.push('Limited group collaboration');
+                analysis.recommendations.push('Encourage participation in study groups');
+            }
+            
+            return analysis;
+        }
+
+        // Export functionality (bonus feature)
+        function exportPredictionReport() {
+            const resultSection = document.getElementById('predictionResultSection');
+            if (resultSection.style.display === 'none') {
+                alert('No prediction result to export. Please make a prediction first.');
+                return;
+            }
+            
+            // Simple text export - in real implementation, could be PDF
+            const reportData = {
+                timestamp: new Date().toLocaleString(),
+                student_name: document.getElementById('studentName').value,
+                prediction: document.getElementById('engagementStatus').textContent,
+                confidence: document.getElementById('confidenceScore').textContent + '%'
+            };
+            
+            const reportText = `
+                Student Engagement Prediction Report
+                Generated: ${reportData.timestamp}
+
+                Student: ${reportData.student_name}
+                Prediction: ${reportData.prediction}
+                Confidence: ${reportData.confidence}
+
+                This report was generated by the Student Engagement Prediction System.
+            `.trim();
+            
+            // Create and download text file
+            const blob = new Blob([reportText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `engagement_report_${reportData.student_name.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter to submit prediction
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('manualPredictionForm').dispatchEvent(new Event('submit'));
+            }
+            
+            // Ctrl+R to refresh (prevent default browser refresh)
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                location.reload();
+            }
+        });
+
+        // Initialize tooltips and popovers (if Bootstrap JS is loaded)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+
+        
+        // PERBAIKAN: Add debugging information
+        console.log('Dashboard JavaScript loaded - FIXED VERSION');
+        console.log('Current URL:', window.location.href);
+        console.log('CSRF Token available:', !!getCSRFToken());
+
+        // PERBAIKAN: Test connection to backend
+        async function testConnection() {
+            try {
+                const response = await fetch('/dashboard-syahira/', {
+                    method: 'GET'
+                });
+                console.log('Backend connection test:', response.ok ? 'OK' : 'Failed');
+            } catch (error) {
+                console.error('Backend connection test failed:', error);
+            }
+        }
+
+        // Run connection test when page loads
+        document.addEventListener('DOMContentLoaded', testConnection);
+    </script>
+</body>
+</html>

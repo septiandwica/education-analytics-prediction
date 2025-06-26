@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Prediction Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .results-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .prediction-result {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .prediction-class {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .prediction-class.good {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .prediction-class.normal {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .prediction-class.bad {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            color: white;
+        }
+
+        .confidence-score {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .probability-chart {
+            margin-top: 20px;
+            height: 300px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+
+        .input-hints {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .input-hints h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .input-hints ul {
+            color: #555;
+            font-size: 0.9rem;
+            padding-left: 20px;
+        }
+
+        .input-hints li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .prediction-class {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Floating Navigation Button */
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .nav-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(2, 48, 29, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 169, 99, 0.6);
+        }
+
+        .nav-toggle.active {
+            transform: rotate(45deg);
+        }
+
+        .nav-menu {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0);
+            transform-origin: bottom right;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .nav-menu.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            margin: 5px 0;
+            border: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 184, 107, 0.1);
+            color: #00b86b;
+            text-decoration: none;
+            border-color: rgba(0, 184, 107, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        .nav-item-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-item-desc {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Classification Prediction Dashboard</h1>
+            <p>Predict class based on performance metrics</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>📊 Input Data</h2>
+                <form id="predictionForm">
+                    <div class="form-group">
+                        <label for="avg_grade">Average Grade</label>
+                        <input type="number" id="avg_grade" name="avg_grade" step="0.01" min="0" max="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="member_count">Member Count</label>
+                        <input type="number" id="member_count" name="member_count" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total_sessions">Total Sessions</label>
+                        <input type="number" id="total_sessions" name="total_sessions" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="avg_session_duration_mins">Avg Session Duration (mins)</label>
+                        <input type="number" id="avg_session_duration_mins" name="avg_session_duration_mins" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="feedback_count">Feedback Count</label>
+                        <input type="number" id="feedback_count" name="feedback_count" min="0" required>
+                    </div>
+
+                    <button type="submit" class="predict-btn" id="predictBtn">
+                        🔮 Predict Classification
+                    </button>
+                </form>
+
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+
+            <div class="results-section">
+                <h2>🎯 Prediction Results</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing data...</p>
+                </div>
+
+                <div id="resultsContainer" style="display: none;">
+                    <div class="prediction-result">
+                        <div class="prediction-class" id="predictionClass">
+                            Awaiting Prediction
+                        </div>
+                        <div class="confidence-score" id="confidenceScore">
+                            Enter data and click predict to see results
+                        </div>
+                    </div>
+
+                    <div class="probability-chart">
+                        <canvas id="probabilityChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="noResults" style="text-align: center; color: #666; padding: 40px;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📈</div>
+                    <p>Enter your data and click predict to see classification results</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-nav">
+        <div class="nav-menu" id="navMenu">
+            <a href="{% url 'prediction' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <div>
+                    <div class="nav-item-title">Main Dashboard</div>
+                    <div class="nav-item-desc">Return to overview</div>
+                </div>
+            </a>
+            <a href="#" class="nav-item" onclick="showHelp()">
+                <i class="fas fa-question-circle"></i>
+                <div>
+                    <div class="nav-item-title">Help</div>
+                    <div class="nav-item-desc">Help and support</div>
+                </div>
+            </a>
+            <a href="#" class="nav-item" onclick="clearForm()">
+                <i class="fas fa-refresh"></i>
+                <div>
+                    <div class="nav-item-title">Clear Form</div>
+                    <div class="nav-item-desc">Reset all inputs</div>
+                </div>
+            </a>
+        </div>
+        <button class="nav-toggle" id="navToggle">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+</div>
+    <script>
+        let chart = null;
+
+        // Floating Navigation
+        function initFloatingNav() {
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            navToggle.addEventListener('click', function() {
+                navToggle.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.floating-nav')) {
+                    navToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                }
+            });
+        }
+
+        // Initialize floating navigation on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initFloatingNav();
+        });
+
+        // Handling prediction form
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                avg_grade: parseFloat(formData.get('avg_grade')),
+                member_count: parseInt(formData.get('member_count')),
+                total_sessions: parseInt(formData.get('total_sessions')),
+                avg_session_duration_mins: parseFloat(formData.get('avg_session_duration_mins')),
+                feedback_count: parseInt(formData.get('feedback_count'))
+            };
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('predictBtn').disabled = true;
+
+            try {
+                const response = await fetch('/prediction/group-performance/api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                displayResults(result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to get prediction. Please check your connection and try again.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('predictBtn').disabled = false;
+            }
+        });
+
+        function displayResults(result) {
+            const { prediction, probability, classes } = result;
+            
+            // Display prediction class
+            const predictionElement = document.getElementById('predictionClass');
+            predictionElement.textContent = prediction;
+            predictionElement.className = `prediction-class ${prediction.toLowerCase()}`;
+
+            // Display confidence score
+            const maxProbability = Math.max(...probability);
+            const confidencePercentage = (maxProbability * 100).toFixed(1);
+            document.getElementById('confidenceScore').textContent = 
+                `Confidence: ${confidencePercentage}%`;
+
+            // Create probability chart
+            createProbabilityChart(classes, probability);
+
+            // Show results
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+        }
+
+        function createProbabilityChart(classes, probabilities) {
+            const ctx = document.getElementById('probabilityChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (chart) {
+                chart.destroy();
+            }
+
+            const colors = {
+                'Bad': 'rgba(252, 70, 107, 0.8)',
+                'Normal': 'rgba(240, 147, 251, 0.8)',
+                'Good': 'rgba(17, 153, 142, 0.8)'
+            };
+
+            const backgroundColors = classes.map(cls => colors[cls]);
+            const borderColors = classes.map(cls => colors[cls].replace('0.8', '1'));
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: classes,
+                    datasets: [{
+                        label: 'Probability',
+                        data: probabilities.map(p => (p * 100).toFixed(1)),
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: 10,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Classification Probabilities',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Probability (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Classification'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        function showHelp() {
+        alert(`
+💡 Input Guidelines:
+
+1. Average Grade: 0-100 (typical student performance)
+2. Member Count: Number of group members
+3. Total Sessions: Number of study/meeting sessions
+4. Session Duration: Average time per session in minutes
+5. Feedback Count: Number of feedback received
+        `);
+    }
+
+    // Function to clear the form
+    function clearForm() {
+        document.getElementById('predictionForm').reset(); // Reset all form inputs
+        document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('defaultMessage').style.display = 'block';
+        
+        // Close the nav menu
+        document.getElementById('navToggle').classList.remove('active');
+        document.getElementById('navMenu').classList.remove('active');
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Graduation Prediction Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+         /* Base styling */
+         body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f2fff4; /* Primary background color */
+            color: #333; /* Text color */
+            overflow-x: hidden;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #00b86b 0%, #00a25d 100%); /* Gradient using Primary and Secondary Green */
+            min-height: 100vh;
+        }
+        
+        .card-custom {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .result-card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .passed-card {
+            background: linear-gradient(135deg, #00b86b 0%, #00a25d 100%); /* Gradient for passed status */
+            color: white;
+        }
+        
+        .failed-card {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); /* Gradient for failed status */
+            color: white;
+        }
+        
+        .btn-predict {
+            background: linear-gradient(135deg, #00b86b 0%, #00a25d 100%); /* Green gradient button */
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,184,107,0.4);
+            color: white;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #00b86b; /* Green border on focus */
+            box-shadow: 0 0 0 0.2rem rgba(0, 184, 107, 0.25);
+        }
+        
+        .info-icon {
+            color: #00b86b; /* Green color for icons */
+        }
+        
+        .suggestion-item {
+            background: rgba(0, 184, 107, 0.1); /* Light green background */
+            border-left: 4px solid #00b86b; /* Green border */
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.show {
+            display: inline-block;
+        }
+        
+        .model-info {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.35s;
+        }
+
+        /* Floating Navigation Button */
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .nav-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #01311d 0%, #004e2c 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(2, 48, 29, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+
+        .nav-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 169, 99, 0.6);
+        }
+
+        .nav-toggle.active {
+            transform: rotate(45deg);
+        }
+
+        .nav-menu {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0);
+            transform-origin: bottom right;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .nav-menu.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            margin: 5px 0;
+            border: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 184, 107, 0.1);
+            color: #00b86b;
+            text-decoration: none;
+            border-color: rgba(0, 184, 107, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        .nav-item-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-item-desc {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+        
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-4 text-white mb-3">
+                    <i class="fas fa-graduation-cap me-3"></i>
+                    Student Graduation Predictor
+                </h1>
+                <p class="lead text-white-50">Predicting student graduation risk using Machine Learning</p>
+            </div>
+        </div>
+
+        <!-- Model Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="model-info" id="modelInfo">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-robot info-icon me-2"></i>
+                        <span>Loading model information...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Input Form -->
+            <div class="col-lg-6 mb-4">
+                <div class="card card-custom h-100">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h4 class="mb-0">
+                            <i class="fas fa-user-graduate info-icon me-2"></i>
+                            Enter Student Data
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="predictionForm">
+                            <div class="mb-3">
+                                <label for="avgGrade" class="form-label">
+                                    <i class="fas fa-chart-line me-2"></i>Average Grade
+                                </label>
+                                <input type="number" class="form-control" id="avgGrade" 
+                                       placeholder="Enter average grade (0-100)" 
+                                       min="0" max="100" step="0.1" required>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Student's average grade (scale 0-100)
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="sessionCount" class="form-label">
+                                    <i class="fas fa-calendar-check me-2"></i>Number of Attendance Sessions
+                                </label>
+                                <input type="number" class="form-control" id="sessionCount" 
+                                       placeholder="Enter number of attended sessions" 
+                                       min="0" required>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Total number of learning sessions attended
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="sessionDuration" class="form-label">
+                                    <i class="fas fa-clock me-2"></i>Total Study Duration (Hours)
+                                </label>
+                                <input type="number" class="form-control" id="sessionDuration" 
+                                       placeholder="Enter total study hours" 
+                                       min="0" step="0.5" required>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Total study duration in hours
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-predict w-100">
+                                <i class="fas fa-magic me-2"></i>
+                                <span class="btn-text">Predict Now</span>
+                                <div class="spinner-border spinner-border-sm loading ms-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="col-lg-6 mb-4">
+                <div id="resultsContainer" style="display: none;">
+                    <!-- Prediction Result Card -->
+                    <div class="card result-card mb-3" id="predictionCard">
+                        <div class="card-body text-center">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h3 class="mb-2" id="predictionStatus">
+                                        <i class="fas fa-question-circle me-2"></i>
+                                        Status
+                                    </h3>
+                                    <p class="mb-0" id="confidenceText">Confidence: 0%</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-center">
+                                        <svg class="progress-ring" width="120" height="120">
+                                            <circle class="progress-ring-circle" 
+                                                    stroke="white" 
+                                                    stroke-width="8" 
+                                                    fill="transparent" 
+                                                    r="45" 
+                                                    cx="60" 
+                                                    cy="60"/>
+                                        </svg>
+                                        <div class="position-absolute d-flex align-items-center justify-content-center" 
+                                             style="width: 120px; height: 120px;">
+                                            <span class="h4 mb-0 text-white" id="confidencePercentage">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Probability Details -->
+                    <div class="card card-custom mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-chart-pie info-icon me-2"></i>
+                                Probability Details
+                            </h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                                        <i class="fas fa-check-circle text-success fs-4"></i>
+                                        <h6 class="mt-2 mb-1">Passed</h6>
+                                        <span class="h5 text-success" id="passedProb">0%</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-3 bg-danger bg-opacity-10 rounded">
+                                        <i class="fas fa-times-circle text-danger fs-4"></i>
+                                        <h6 class="mt-2 mb-1">Failed</h6>
+                                        <span class="h5 text-danger" id="failedProb">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-lightbulb info-icon me-2"></i>
+                                Suggestions & Recommendations
+                            </h5>
+                            <div id="suggestionsList">
+                                <!-- Suggestions will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default message when no prediction yet -->
+                <div id="defaultMessage" class="card card-custom text-center">
+                    <div class="card-body py-5">
+                        <i class="fas fa-arrow-left info-icon display-4 mb-3"></i>
+                        <h5 class="text-muted">Enter student data to see predictions</h5>
+                        <p class="text-muted">The system will analyze the data and provide predictions along with relevant suggestions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Features -->
+        <div class="row mt-5">
+                <div class="col-md-6">
+                    <div class="card card-custom text-center">
+                        <div class="card-body">
+                            <i class="fas fa-upload display-4 info-icon mb-3"></i>
+                            <h5>Batch Prediction</h5>
+                            <p class="text-muted">Upload a CSV file for multiple student predictions at once</p>
+                            <input type="file" class="form-control" id="csvFile" accept=".csv">
+                            <button class="btn btn-predict mt-3" onclick="uploadCSV()">
+                                <i class="fas fa-upload me-2"></i> Upload and Predict
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <div class="col-md-6 mb-3">
+                <div class="card card-custom text-center">
+                    <div class="card-body">
+                        <i class="fas fa-chart-bar display-4 info-icon mb-3"></i>
+                        <h5>Historical Analysis</h5>
+                        <p class="text-muted">View trends and statistics of past predictions</p>
+                        <button class="btn btn-outline-primary" onclick="showAnalytics()">
+                            <i class="fas fa-analytics me-2"></i>Coming Soon
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Navigation -->
+    <div class="floating-nav">
+        <div class="nav-menu" id="navMenu">
+            <a href="{% url 'prediction' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <div>
+                    <div class="nav-item-title">Main Dashboard</div>
+                    <div class="nav-item-desc">Return to overview</div>
+                </div>
+            </a>
+            <a href="#" class="nav-item" onclick="exportResults()">
+                <i class="fas fa-download"></i>
+                <div>
+                    <div class="nav-item-title">Export Results</div>
+                    <div class="nav-item-desc">Download predictions</div>
+                </div>
+            </a>
+            <a href="#" class="nav-item" onclick="resetForm()">
+                <i class="fas fa-refresh"></i>
+                <div>
+                    <div class="nav-item-title">Reset Form</div>
+                    <div class="nav-item-desc">Clear all inputs</div>
+                </div>
+            </a>
+            <a href="#" class="nav-item" onclick="showHelp()">
+                <i class="fas fa-question-circle"></i>
+                <div>
+                    <div class="nav-item-title">Help & Guide</div>
+                    <div class="nav-item-desc">How to use</div>
+                </div>
+            </a>
+        </div>
+        <button class="nav-toggle" id="navToggle">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load model information on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModelInfo();
+            initFloatingNav();
+        });
+
+        // Initialize floating navigation
+        function initFloatingNav() {
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            navToggle.addEventListener('click', function() {
+                navToggle.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.floating-nav')) {
+                    navToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                }
+            });
+        }
+
+        // Load model information
+        async function loadModelInfo() {
+            try {
+                const response = await fetch('/model-info/');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('modelInfo').innerHTML = `
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="fas fa-robot info-icon me-2"></i>
+                                <strong>${data.model_name}</strong>
+                                <span class="text-muted ms-2">| Trained: ${data.training_date}</span>
+                            </div>
+                            <span class="badge bg-success">${data.model_summary}</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('modelInfo').innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <span>Model information not available</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading model info:', error);
+                document.getElementById('modelInfo').innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        <span>Error loading model information</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loadingSpinner = document.querySelector('.loading');
+            const btnText = document.querySelector('.btn-text');
+            const submitBtn = document.querySelector('.btn-predict');
+            
+            // Show loading state
+            loadingSpinner.classList.add('show');
+            btnText.textContent = 'Predicting...';
+            submitBtn.disabled = true;
+            
+            // Get form data
+            const formData = {
+                avg_grade: parseFloat(document.getElementById('avgGrade').value),
+                session_count: parseInt(document.getElementById('sessionCount').value),
+                session_duration_hours: parseFloat(document.getElementById('sessionDuration').value)
+            };
+            
+            try {
+                const response = await fetch('/prediction/graduation/api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResults(result);
+                } else {
+                    showError(result.error || 'An error occurred during prediction');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Connection error occurred');
+            } finally {
+                // Hide loading state
+                loadingSpinner.classList.remove('show');
+                btnText.textContent = 'Predict Now';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Display prediction results
+        function displayResults(result) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const defaultMessage = document.getElementById('defaultMessage');
+            const predictionCard = document.getElementById('predictionCard');
+            
+            // Hide default message and show results
+            defaultMessage.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            // Update prediction card
+            const isPassed = result.prediction === 'Passed';
+            predictionCard.className = `card result-card mb-3 ${isPassed ? 'passed-card' : 'failed-card'}`;
+            
+            document.getElementById('predictionStatus').innerHTML = `
+                <i class="fas fa-${isPassed ? 'check-circle' : 'times-circle'} me-2"></i>
+                ${result.prediction}
+            `;
+            
+            document.getElementById('confidenceText').textContent = `Confidence: ${result.confidence}%`;
+            document.getElementById('confidencePercentage').textContent = `${result.confidence}%`;
+            
+            // Update progress ring
+            const circle = document.querySelector('.progress-ring-circle');
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (result.confidence / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            // Update probability details
+            document.getElementById('passedProb').textContent = `${result.probability_passed}%`;
+            document.getElementById('failedProb').textContent = `${result.probability_failed}%`;
+            
+            // Display suggestions
+            const suggestionsList = document.getElementById('suggestionsList');
+            suggestionsList.innerHTML = result.suggestions.map(suggestion => 
+                `<div class="suggestion-item">${suggestion}</div>`
+            ).join('');
+            
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show error message
+        function showError(message) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const defaultMessage = document.getElementById('defaultMessage');
+            
+            defaultMessage.innerHTML = `
+                <div class="card-body py-5 text-center">
+                    <i class="fas fa-exclamation-triangle text-warning display-4 mb-3"></i>
+                    <h5 class="text-danger">Error</h5>
+                    <p class="text-muted">${message}</p>
+                    <button class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="fas fa-refresh me-2"></i>Try Again
+                    </button>
+                </div>
+            `;
+            
+            resultsContainer.style.display = 'none';
+            defaultMessage.style.display = 'block';
+        }
+
+        // Function to handle CSV file upload for bulk prediction
+        function uploadCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a CSV file first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const submitBtn = document.querySelector('.btn-predict');
+            submitBtn.disabled = true;
+            const loadingSpinner = document.querySelector('.loading');
+            loadingSpinner.classList.add('show');
+
+            fetch('/bulk-predict-graduation/', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingSpinner.classList.remove('show');
+                submitBtn.disabled = false;
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    displayBulkResults(data.results);
+                }
+            })
+            .catch(error => {
+                loadingSpinner.classList.remove('show');
+                submitBtn.disabled = false;
+                alert('An error occurred: ' + error.message);
+            });
+        }
+
+        // Function to display results from bulk prediction
+        function displayBulkResults(results) {
+            let resultHTML = '<h5>Batch Prediction Results:</h5><ul>';
+            results.forEach(result => {
+                if (result.error) {
+                    resultHTML += `<li><strong>Student ID: ${result.student_id}</strong> - ${result.error}</li>`;
+                } else {
+                    resultHTML += `
+                        <li>
+                            <strong>Student ID: ${result.student_id}</strong> - ${result.prediction} 
+                            (Passed Probability: ${result.probability_passed}% - Failed Probability: ${result.probability_failed}%)
+                            <br>
+                            <strong>Suggestions & Recommendations:</strong>
+                            <ul>
+                                ${result.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                            </ul>
+                        </li>
+                    `;
+                }
+            });
+            resultHTML += '</ul>';
+            document.getElementById('resultsContainer').innerHTML = resultHTML;
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        function showAnalytics() {
+            alert('Historical analysis feature coming soon!');
+        }
+
+        // Floating navigation functions
+        function exportResults() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            if (resultsContainer.style.display === 'none') {
+                alert('No results to export. Please make a prediction first.');
+                return;
+            }
+            alert('Export functionality will be implemented soon!');
+        }
+
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('defaultMessage').style.display = 'block';
+            
+            // Close the nav menu
+            document.getElementById('navToggle').classList.remove('active');
+            document.getElementById('navMenu').classList.remove('active');
+        }
+
+        function showHelp() {
+            alert(`How to use Student Graduation Predictor:
+
+1. Enter the student's average grade (0-100)
+2. Input the number of attendance sessions
+3. Add total study duration in hours
+4. Click "Predict Now" to get results
+5. Review the prediction and suggestions
+
+Features:
+• Single student prediction
+• Batch CSV upload
+• Export results (coming soon)
+• Historical analysis (coming soon)`);
+        }
+    </script>
+</body>
+</html>

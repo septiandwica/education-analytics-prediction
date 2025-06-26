@@ -1,0 +1,60 @@
+{% extends 'project_app/base/app.html' %}
+{% block title %}About Us - Student Activity{% endblock %}
+
+{% block content %}
+{% load static %}
+
+  <section class="hero">
+    <div class="hero-text">
+      <p class="highlight">Meet Our Team</p>
+      <h1><span class="bold">Group</span> <span class="green">Members</span></h1>
+      <p class="desc">Our project team is composed of highly motivated students with distinct roles and responsibilities that contribute to the success of the Student Learning Behavior project.</p>
+    </div>
+  </section>
+
+  <!-- Team Cards -->
+  <section class="cards-container">
+    <div class="cards">
+      <!-- Member 1 -->
+      <div class="card">
+        <img src="{% static 'project_app/images/samuel.jpeg' %}" alt="Samuel Sasaki">
+        <h3>Samuel George Sasaki</h3>
+        <p class="role">Information System 2023</p>
+        <p>Group Performance Prediction</p>
+      </div>
+      
+      <!-- Member 2 -->
+      <div class="card">
+        <img src="{% static 'project_app/images/septian.jpeg' %}" alt="Septian Dwi Cahyo">
+        <h3>Septian Dwi Cahyo</h3>
+        <p class="role">Information System 2023</p>
+        <p>Graduation Prediction (Passed or Failed)</p>
+
+      </div>
+      
+      <!-- Member 3 -->
+      <div class="card">
+        <img src="{% static 'project_app/images/khai.jpeg' %}" alt="Muhammad Khairatul">
+        <h3>Muhammad Khairatul</h3>
+        <p class="role">Information System 2023</p>
+        <p>Grade Prediction Based on Session and Duration</p>
+      </div>
+      
+      <!-- Member 4 -->
+      <div class="card">
+        <img src="{% static 'project_app/images/syahira.jpeg' %}" alt="Syahira Ana">
+        <h3>Syahira Ana Priscouly</h3>
+        <p class="role">Information System 2023</p>
+        <p>Student Engagement Prediction</p>
+      </div>
+      
+      <!-- Member 5 (renamed from Member 4) -->
+      <div class="card">
+        <img src="{% static 'project_app/images/shakiva.jpeg' %}" alt="Shakiva Naswa">
+        <h3>Shakiva Naswa Crescensia</h3>
+        <p class="role">Information System 2023</p>
+        <p>Session Quality Prediction</p>
+      </div>
+    </div>
+  </section>
+  {% endblock %}

@@ -1,0 +1,204 @@
+{% extends 'project_app/base/app.html' %}
+{% block title %}Home- Student Activity{% endblock %}
+
+{% block content %}
+{% load static %}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
+      background: #F2FFF4;
+      min-height: 100vh;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo span {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+
+    .hero-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 4rem;
+    }
+
+    .hero-content {
+      flex: 1;
+    }
+
+    .hero-subtitle {
+      color: #f56565;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .home-page{
+      height: 100vh;
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #2d3748;
+      line-height: 1.2;
+      margin-bottom: 2rem;
+    }
+
+    .hero-title .highlight {
+      background: linear-gradient(135deg, #00b86b 0%,#00b86b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-description {
+      color: #718096;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 3rem;
+      max-width: 600px;
+    }
+
+    .cta-button {
+      background: linear-gradient(135deg, #00b86b 0%, #00b86b 100%);
+      color: white;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .hero-image {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .illustration {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1));
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      padding: 3rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      flex: 0 0 calc(33.333% - 2rem);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      margin-top: 1rem;
+      color: #2d3748;
+    }
+
+    .card p {
+      font-size: 1rem;
+      color: #4a5568;
+      margin-top: 0.5rem;
+    }
+
+    .card img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+
+    @media (max-width: 992px) {
+      .card {
+        flex: 0 0 calc(50% - 2rem);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        flex: 0 0 100%;
+      }
+
+      .hero-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1rem;
+      }
+
+      .hero-content {
+        text-align: center;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+    }
+  </style>
+
+<section class="hero-section home-page">
+  <div class="hero-content">
+    <p class="hero-subtitle">Visual Analytics and Modeling of</p>
+    <h1 class="hero-title">
+      <span class="highlight">Student</span> Learning<br />
+      <span class="highlight">Behavior</span>
+    </h1>
+    <p class="hero-description">
+      This project explores predictive insights into student learning behavior through advanced data analysis — including Group Performance Prediction, Graduation Prediction (Passed or Failed), Grade Prediction based on Session Frequency and Duration, Student Engagement Analysis, and Session Quality Assessment — helping educators make data-driven decisions to enhance learning outcomes.
+    </p>
+    <a href="{% url 'prediction' %}" class="cta-button">Get Started</a>
+  </div>
+  <div class="hero-image">
+    <img src="{% static 'project_app/images/background.png' %}" alt="Illustration" class="illustration" />
+  </div>
+</section>
+
+  {% endblock %}

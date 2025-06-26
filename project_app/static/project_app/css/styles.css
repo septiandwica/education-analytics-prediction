@@ -1,0 +1,284 @@
+/* Base styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f2fff4;
+  color: #333;
+  overflow-x: hidden;
+}
+
+/* Navbar */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 80px;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #433e7b;
+}
+
+.logo img {
+  width: 50px;
+  margin-right: 12px;
+}
+
+.nav-links a {
+  margin-left: 35px;
+  text-decoration: none;
+  color: #000;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #00b86b;
+}
+
+.user-btn {
+  background-color: #00b86b;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,184,107,0.15);
+}
+
+.user-btn:hover {
+  background-color: #00a25d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,184,107,0.2);
+}
+
+/* Hero Section */
+.hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 80px 40px;
+  flex-wrap: wrap;
+  gap: 30px;
+  text-align: center;
+}
+
+.hero-text {
+  max-width: 800px;
+}
+
+.hero-text .highlight {
+  color: #f45b2a;
+  font-size: 16px;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.hero-text h1 {
+  font-size: 48px;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+.hero-text .bold {
+  font-weight: 700;
+  color: #000;
+}
+
+.hero-text .green {
+  color: #00b86b;
+  font-weight: 700;
+}
+
+.hero-text .desc {
+  font-size: 16px;
+  color: #444;
+  margin-bottom: 25px;
+  line-height: 1.8;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.cta-btn {
+  background-color: #00b86b;
+  color: white;
+  padding: 12px 28px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.cta-btn:hover {
+  background-color: #00a25d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,184,107,0.2);
+}
+
+/* Hero Image */
+.hero-img {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-img img {
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* Cards Section */
+.cards-container {
+  background-color: white;
+  padding: 20px 0 80px;
+}
+
+.cards {
+  display: flex;
+  justify-content: center;
+  padding: 40px 80px;
+  gap: 30px;
+  flex-wrap: wrap;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.card {
+  background: #f7fdf9;
+  padding: 35px 25px;
+  text-align: center;
+  border-radius: 20px;
+  flex: 0 0 280px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.07);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.card img {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 24px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border: 6px solid white;
+}
+
+.card h3 {
+  font-size: 22px;
+  color: #2c2c51;
+  margin-bottom: 10px;
+}
+
+.card .role {
+  color: #00b86b;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.card p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .cards {
+    padding: 40px 50px;
+  }
+  
+  .card {
+    flex: 0 0 290px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    padding: 20px 30px;
+  }
+  
+  .nav-links a {
+    margin-left: 20px;
+    font-size: 15px;
+  }
+  
+  .hero {
+    padding: 40px 30px;
+  }
+  
+  .hero-text h1 {
+    font-size: 38px;
+  }
+  
+  .cards {
+    padding: 30px 20px;
+    gap: 25px;
+  }
+  
+  .card {
+    flex: 0 0 100%;
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links a {
+    margin-left: 12px;
+    font-size: 14px;
+  }
+  
+  .logo {
+    font-size: 20px;
+  }
+  
+  .logo img {
+    width: 40px;
+  }
+  
+  .hero-text h1 {
+    font-size: 32px;
+  }
+  
+  .card img {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* Footer (Optional) */
+footer {
+  background-color: #2c2c51;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}
