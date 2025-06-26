@@ -1,0 +1,7 @@
+Django==5.2
+pandas
+numpy
+scikit-learn
+joblib
+imbalanced-learn
+# psycopg2-binary  # Uncomment jika menggunakan PostgreSQL 
